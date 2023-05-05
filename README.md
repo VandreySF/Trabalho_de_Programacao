@@ -40,3 +40,8 @@ while continuar_usando == "SIM":
 
 # Perguntamos ao usuário se ele quer continuar usando a calculadora com SIM ou NÃO modificamos a variável "continuar_usando" com INPUT.
     continuar_usando = input("Deseja continuar usando a calculadora? (SIM/NÃO): ")
+
+## Participantes:
+Jão Victor,
+Rennan Santos e
+Vandrey Silva
