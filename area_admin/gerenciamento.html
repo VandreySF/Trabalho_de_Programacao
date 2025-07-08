@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gerenciamento - Barbearia Elite</title>
+    <link rel="stylesheet" href="gerenciamento.css">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="header-content">
+            <div class="logo">
+                <i class="fas fa-cut"></i>
+                <h1>Barbearia Elite</h1>
+                <span>Painel Administrativo</span>
+            </div>
+            <div class="user-info">
+                <span>Bem-vindo, Admin</span>
+                <div class="notification-badge" id="notificationBadge" style="display: none;">
+                    <span id="pendingCount">0</span>
+                </div>
+                <button class="logout-btn" onclick="logout()">
+                    <i class="fas fa-sign-out-alt"></i>
+                    Sair
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Dashboard Stats -->
+        <section class="dashboard-stats">
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="fas fa-calendar-check"></i>
+                </div>
+                <div class="stat-info">
+                    <h3>Agendamentos Hoje</h3>
+                    <span class="stat-number" id="todayBookings">0</span>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="fas fa-clock"></i>
+                </div>
+                <div class="stat-info">
+                    <h3>Próximos Horários</h3>
+                    <span class="stat-number" id="upcomingBookings">0</span>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="fas fa-users"></i>
+                </div>
+                <div class="stat-info">
+                    <h3>Total de Clientes</h3>
+                    <span class="stat-number" id="totalClients">0</span>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="fas fa-dollar-sign"></i>
+                </div>
+                <div class="stat-info">
+                    <h3>Receita do Mês</h3>
+                    <span class="stat-number" id="monthlyRevenue">R$ 0</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- Controls -->
+        <section class="controls">
+            <div class="search-filter">
+                <div class="search-box">
+                    <i class="fas fa-search"></i>
+                    <input type="text" id="searchInput" placeholder="Buscar por nome, telefone ou serviço...">
+                </div>
+                <div class="filter-options">
+                    <select id="statusFilter">
+                        <option value="">Todos os Status</option>
+                        <option value="confirmado">Confirmado</option>
+                        <option value="pendente">Pendente</option>
+                        <option value="cancelado">Cancelado</option>
+                        <option value="concluido">Concluído</option>
+                    </select>
+                    <select id="dateFilter">
+                        <option value="">Todas as Datas</option>
+                        <option value="today">Hoje</option>
+                        <option value="tomorrow">Amanhã</option>
+                        <option value="week">Esta Semana</option>
+                        <option value="month">Este Mês</option>
+                    </select>
+                </div>
+            </div>
+            <div class="action-buttons">
+                <button class="btn btn-secondary" onclick="exportData()">
+                    <i class="fas fa-download"></i>
+                    Exportar Dados
+                </button>
+            </div>
+        </section>
+
+        <!-- Bookings Table -->
+        <section class="bookings-section">
+            <div class="table-header">
+                <h2>Agendamentos</h2>
+                <div class="table-actions">
+                    <button class="btn btn-small" onclick="refreshTable()">
+                        <i class="fas fa-sync-alt"></i>
+                        Atualizar
+                    </button>
+                </div>
+            </div>
+            <div class="table-container">
+                <table class="bookings-table">
+                    <thead>
+                        <tr>
+                            <th>Cliente</th>
+                            <th>Telefone</th>
+                            <th>Serviço</th>
+                            <th>Data</th>
+                            <th>Horário</th>
+                            <th>Status</th>
+                            <th>Valor</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody id="bookingsTableBody">
+                        <!-- Dados serão inseridos via JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </main>
+
+    <!-- Modal para Novo/Editar Agendamento -->
+    <div id="bookingModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modalTitle">Novo Agendamento</h3>
+                <span class="close" onclick="closeModal()">&times;</span>
+            </div>
+            <form id="bookingForm" class="modal-form">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="modalName">Nome Completo</label>
+                        <input type="text" id="modalName" name="name" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="modalPhone">Telefone</label>
+                        <input type="tel" id="modalPhone" name="phone" required>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="modalService">Serviço</label>
+                        <select id="modalService" name="service" required>
+                            <option value="">Selecione um serviço</option>
+                            <option value="corte R$45">Corte Masculino - R$ 45,00</option>
+                            <option value="barba R$35">Barba Completa - R$ 35,00</option>
+                            <option value="sobrancelha R$25">Sobrancelha - R$ 25,00</option>
+                            <option value="combo R$65">Corte + Barba Combo - R$ 65,00</option>
+                            <option value="hidratacao R$40">Hidratação - R$ 40,00</option>
+                            <option value="blackmask R$50">Black Mask - R$ 50,00</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="modalStatus">Status</label>
+                        <select id="modalStatus" name="status" required>
+                            <option value="pendente">Pendente</option>
+                            <option value="confirmado">Confirmado</option>
+                            <option value="concluido">Concluído</option>
+                            <option value="cancelado">Cancelado</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="modalDate">Data</label>
+                        <input type="date" id="modalDate" name="date" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="modalTime">Horário</label>
+                        <select id="modalTime" name="time" required>
+                            <option value="">Selecione um horário</option>
+                            <option value="09:00">09:00</option>
+                            <option value="10:00">10:00</option>
+                            <option value="11:00">11:00</option>
+                            <option value="14:00">14:00</option>
+                            <option value="15:00">15:00</option>
+                            <option value="16:00">16:00</option>
+                            <option value="17:00">17:00</option>
+                            <option value="18:00">18:00</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="modalNotes">Observações</label>
+                    <textarea id="modalNotes" name="notes" rows="3" placeholder="Observações sobre o agendamento..."></textarea>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal()">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Salvar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal de Confirmação -->
+    <div id="confirmModal" class="modal">
+        <div class="modal-content confirm-modal">
+            <div class="modal-header">
+                <h3>Confirmar Ação</h3>
+                <span class="close" onclick="closeConfirmModal()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <p id="confirmMessage">Tem certeza que deseja realizar esta ação?</p>
+                <div class="modal-actions">
+                    <button class="btn btn-secondary" onclick="closeConfirmModal()">Cancelar</button>
+                    <button class="btn btn-danger" id="confirmActionBtn">Confirmar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="gerenciamento.js"></script>
+</body>
+</html>
